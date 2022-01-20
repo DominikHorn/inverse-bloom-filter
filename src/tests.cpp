@@ -17,12 +17,12 @@ struct Murmur3Finalizer {
   }
 };
 
-TEST(InvertibleBloomFilter, TestConstruct) {
+TEST(InvertibleBloomDictionary, TestConstruct) {
   using Key = std::uint64_t;
   using Value = std::uint32_t;
   using HashFn = Murmur3Finalizer;
 
-  InvertibleBloomFilter<Key, Value, HashFn> ibf(0);
+  InvertibleBloomDictionary<Key, Value, HashFn> ibf(0);
   EXPECT_EQ(ibf.size(), 0);
   EXPECT_EQ(ibf.directory_size(), 0);
   auto seeds = ibf.listSeeds();
@@ -30,7 +30,7 @@ TEST(InvertibleBloomFilter, TestConstruct) {
     for (size_t j = i + 1; j < seeds.size(); j++)
       EXPECT_FALSE(seeds[i] == seeds[j]);
 
-  InvertibleBloomFilter<Key, Value, HashFn> ibf2(10);
+  InvertibleBloomDictionary<Key, Value, HashFn> ibf2(10);
   EXPECT_EQ(ibf2.size(), 0);
   EXPECT_EQ(ibf2.directory_size(), 10);
   seeds = ibf2.listSeeds();
@@ -39,12 +39,12 @@ TEST(InvertibleBloomFilter, TestConstruct) {
       EXPECT_FALSE(seeds[i] == seeds[j]);
 }
 
-TEST(InvertibleBloomFilter, TestInsertAndRetrieve) {
+TEST(InvertibleBloomDictionary, TestInsertAndRetrieve) {
   using Key = std::uint64_t;
   using Value = std::uint32_t;
   using HashFn = Murmur3Finalizer;
 
-  InvertibleBloomFilter<Key, Value, HashFn> ibf(10, 0);
+  InvertibleBloomDictionary<Key, Value, HashFn> ibf(10, 0);
 
   EXPECT_TRUE(ibf.contains(1337) == ContainsResult::not_found);
   ibf.insert(1337, 42);
@@ -59,12 +59,12 @@ TEST(InvertibleBloomFilter, TestInsertAndRetrieve) {
   EXPECT_EQ(ibf.size(), 2);
 }
 
-TEST(InvertibleBloomFilter, TestRemove) {
+TEST(InvertibleBloomDictionary, TestRemove) {
   using Key = std::uint64_t;
   using Value = std::uint32_t;
   using HashFn = Murmur3Finalizer;
 
-  InvertibleBloomFilter<Key, Value, HashFn> ibf(10, 0);
+  InvertibleBloomDictionary<Key, Value, HashFn> ibf(10, 0);
 
   ibf.insert(1337, 42);
   ibf.insert(84, 85);
@@ -81,12 +81,12 @@ TEST(InvertibleBloomFilter, TestRemove) {
   EXPECT_EQ(ibf.size(), 0);
 }
 
-TEST(InvertibleBloomFilter, TestListAll) {
+TEST(InvertibleBloomDictionary, TestListAll) {
   using Key = std::uint64_t;
   using Value = std::uint32_t;
   using HashFn = Murmur3Finalizer;
 
-  InvertibleBloomFilter<Key, Value, HashFn> ibf(10, 0);
+  InvertibleBloomDictionary<Key, Value, HashFn> ibf(10, 0);
 
   const std::vector<std::pair<Key, Value>> data{{1, 0}, {1337, 42}, {86, 89}};
 

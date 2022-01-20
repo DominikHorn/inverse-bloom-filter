@@ -10,20 +10,20 @@
 namespace ibf {
 
 /**
- * InvertibleBloomFilters are probabilistic structures
+ * InvertibleBloomDictionarys are probabilistic structures
  * that can, in some cases, only answer probabilistically
  */
 enum ContainsResult { not_found, might_exist, exists };
 
 /**
- * InvertibleBloomFilter is a probabilistic dictionary data structure.
+ * InvertibleBloomDictionary is a probabilistic dictionary data structure.
  *
  * It can do everything a normal bloom filter is capable of and, with a certain
  * probability < 1, recover associated values and also the original keyset
  */
 template <class Key, class Value, class HashFn, size_t K = 3,
           class BucketCounter = std::uint16_t>
-class InvertibleBloomFilter {
+class InvertibleBloomDictionary {
   struct Bucket {
     Key cumulative_key = 0;
     Value cumulative_value = 0;
@@ -45,12 +45,13 @@ class InvertibleBloomFilter {
 
 public:
   /**
-   * Constructs and InvertibleBloomFilter given a target directory size and
+   * Constructs and InvertibleBloomDictionary given a target directory size and
    * seed (defaults to std::random_device()()). Note that the directory never
-   * resizes during InvertibleBloomFilter's lifetime, hence you must pick a
+   * resizes during InvertibleBloomDictionary's lifetime, hence you must pick a
    * value that fits your keys upfront
    */
-  InvertibleBloomFilter(size_t size, unsigned int seed = std::random_device()())
+  InvertibleBloomDictionary(size_t size,
+                            unsigned int seed = std::random_device()())
       : buckets(size), count(0) {
     std::default_random_engine rng(seed);
     std::uniform_int_distribution<Seed> dist(std::numeric_limits<Seed>::min(),
@@ -71,7 +72,7 @@ public:
   }
 
   /**
-   * Count of keys in this InvertibleBloomFilter
+   * Count of keys in this InvertibleBloomDictionary
    */
   size_t size() const { return count; }
 
