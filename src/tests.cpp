@@ -17,6 +17,86 @@ struct Murmur3Finalizer {
   }
 };
 
+TEST(InvertibleBloomFilter, TestConstruct) {
+  using Key = std::uint64_t;
+  using HashFn = Murmur3Finalizer;
+
+  InvertibleBloomFilter<Key, HashFn> ibf(0);
+  EXPECT_EQ(ibf.size(), 0);
+  EXPECT_EQ(ibf.directory_size(), 0);
+  auto seeds = ibf.listSeeds();
+  for (size_t i = 0; i < seeds.size(); i++)
+    for (size_t j = i + 1; j < seeds.size(); j++)
+      EXPECT_FALSE(seeds[i] == seeds[j]);
+
+  InvertibleBloomFilter<Key, HashFn> ibf2(10);
+  EXPECT_EQ(ibf2.size(), 0);
+  EXPECT_EQ(ibf2.directory_size(), 10);
+  seeds = ibf2.listSeeds();
+  for (size_t i = 0; i < seeds.size(); i++)
+    for (size_t j = i + 1; j < seeds.size(); j++)
+      EXPECT_FALSE(seeds[i] == seeds[j]);
+}
+
+TEST(InvertibleBloomFilter, TestInsertAndContains) {
+  using Key = std::uint64_t;
+  using HashFn = Murmur3Finalizer;
+
+  InvertibleBloomFilter<Key, HashFn> ibf(10, 0);
+
+  EXPECT_TRUE(ibf.contains(1337) == ContainsResult::not_found);
+  ibf.insert(1337);
+  EXPECT_TRUE(ibf.contains(1337) == ContainsResult::exists);
+  EXPECT_EQ(ibf.size(), 1);
+
+  EXPECT_TRUE(ibf.contains(84) == ContainsResult::not_found);
+  ibf.insert(84);
+  EXPECT_TRUE(ibf.contains(84) == ContainsResult::exists);
+  EXPECT_EQ(ibf.size(), 2);
+}
+
+TEST(InvertibleBloomFilter, TestRemove) {
+  using Key = std::uint64_t;
+  using HashFn = Murmur3Finalizer;
+
+  InvertibleBloomFilter<Key, HashFn> ibf(10, 0);
+
+  ibf.insert(1337);
+  ibf.insert(84);
+  EXPECT_TRUE(ibf.contains(1337) == ContainsResult::exists);
+  EXPECT_TRUE(ibf.contains(84) == ContainsResult::exists);
+
+  EXPECT_TRUE(ibf.remove(1337));
+  EXPECT_TRUE(ibf.contains(1337) == ContainsResult::not_found);
+  EXPECT_EQ(ibf.size(), 1);
+  EXPECT_TRUE(ibf.remove(84));
+  EXPECT_TRUE(ibf.contains(84) == ContainsResult::not_found);
+  EXPECT_EQ(ibf.size(), 0);
+}
+
+TEST(InvertibleBloomFilter, TestListAll) {
+  using Key = std::uint64_t;
+  using HashFn = Murmur3Finalizer;
+
+  InvertibleBloomFilter<Key, HashFn> ibf(10, 0);
+
+  const std::vector<Key> keys{1, 1337, 86};
+
+  for (const auto &k : keys)
+    ibf.insert(k);
+
+  EXPECT_EQ(ibf.size(), keys.size());
+
+  auto l = ibf.listAll();
+  EXPECT_TRUE(l);
+  if (l) {
+    auto listed = *l;
+    EXPECT_EQ(listed.size(), ibf.size());
+    for (const auto &k : keys)
+      EXPECT_TRUE(listed.contains(k));
+  }
+}
+
 TEST(InvertibleBloomDictionary, TestConstruct) {
   using Key = std::uint64_t;
   using Value = std::uint32_t;
